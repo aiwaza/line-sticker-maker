@@ -61,6 +61,11 @@ def validate_png(name, data, sticker_type="animated"):
             break
     require(offset == len(data) and kind == b"IEND", f"{name}: trailing data or missing end")
     require(sequence == list(range(len(sequence))), f"{name}: APNG sequence mismatch")
+    if sticker_type == "static":
+        require(animation is None and not controls, f"{name}: requires static PNG without animation")
+    elif animation is not None:
+        require(5 <= animation[0] <= 20 and animation[0] == len(controls),
+                f"{name}: requires 5-20 complete APNG frames before decoding")
     with Image.open(io.BytesIO(data)) as image:
         frame_count, hashes, borders = image.n_frames, set(), []
         require(not image.info.get("default_image", False), f"{name}: include first frame in animation")

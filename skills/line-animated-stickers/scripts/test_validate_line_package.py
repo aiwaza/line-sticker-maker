@@ -1,13 +1,16 @@
 """Small synthetic fixtures: no user art or external service is modified."""
 import io
+import struct
 import tempfile
 import unittest
+import zlib
 from pathlib import Path
+from unittest.mock import patch
 from zipfile import ZipFile
 
 from PIL import Image, ImageDraw
 
-from validate_line_package import validate_package
+from validate_line_package import validate_package, validate_png
 
 
 def png(size, seed, animated=True, loop=2, duration=200, dpi=(72, 72)):
@@ -100,6 +103,15 @@ class PackageTests(unittest.TestCase):
     def test_animation_rejects_static_only_count(self):
         with self.assertRaisesRegex(ValueError, "Requires 8, 16, 24"):
             self.check_package(count=32)
+
+    def test_rejects_excessive_frame_header_before_decoding(self):
+        data = bytearray(png((280, 270), 11))
+        position = data.index(b"acTL")
+        struct.pack_into(">I", data, position + 4, 1_000_000)
+        struct.pack_into(">I", data, position + 12, zlib.crc32(data[position:position + 12]) & 0xffffffff)
+        with patch("validate_line_package.Image.open", side_effect=AssertionError("Unexpected decoder call")):
+            with self.assertRaisesRegex(ValueError, "before decoding"):
+                validate_png("01.png", bytes(data))
 
 
 if __name__ == "__main__":
