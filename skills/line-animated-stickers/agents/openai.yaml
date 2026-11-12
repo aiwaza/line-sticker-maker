@@ -1,0 +1,4 @@
+interface:
+  display_name: "내 사진으로 LINE 스탬프 만들기"
+  short_description: "사진 한 장으로 정지·움직이는 스탬프를 골라 스타일·문구 제안부터 LINE 등록까지"
+  default_prompt: "$line-animated-stickers로 정지형인지 움직이는형인지부터 고르고, 내 사진에 맞는 스타일·개수·문구·포즈를 제안해 제작부터 LINE 심사 신청까지 안내해줘."
